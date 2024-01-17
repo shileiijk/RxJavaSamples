@@ -2,37 +2,37 @@
 
 package com.rengwuxian.rxjavasamples.adapter;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
-import com.rengwuxian.rxjavasamples.R;
+import com.rengwuxian.rxjavasamples.databinding.GridItemBinding;
 import com.rengwuxian.rxjavasamples.model.Item;
 
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
-public class ItemListAdapter extends RecyclerView.Adapter {
+public class ItemListAdapter extends RecyclerView.Adapter<ItemListAdapter.DebounceViewHolder> {
     List<Item> images;
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.grid_item, parent, false);
-        return new DebounceViewHolder(view);
+    public ItemListAdapter.DebounceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        GridItemBinding binding =
+                GridItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        return new DebounceViewHolder(binding);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        DebounceViewHolder debounceViewHolder = (DebounceViewHolder) holder;
+    public void onBindViewHolder(ItemListAdapter.DebounceViewHolder holder, int position) {
         Item image = images.get(position);
-        Glide.with(holder.itemView.getContext()).load(image.imageUrl).into(debounceViewHolder.imageIv);
-        debounceViewHolder.descriptionTv.setText(image.description);
+        Glide.with(holder.itemView.getContext()).load(image.imageUrl).into(holder.imageIv);
+        holder.descriptionTv.setText(image.description);
     }
 
     @Override
@@ -46,11 +46,13 @@ public class ItemListAdapter extends RecyclerView.Adapter {
     }
 
     static class DebounceViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.imageIv) ImageView imageIv;
-        @BindView(R.id.descriptionTv) TextView descriptionTv;
-        public DebounceViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
+        ImageView imageIv;
+        TextView descriptionTv;
+
+        public DebounceViewHolder(GridItemBinding binding) {
+            super(binding.getRoot());
+            imageIv = binding.imageIv;
+            descriptionTv = binding.descriptionTv;
         }
     }
 

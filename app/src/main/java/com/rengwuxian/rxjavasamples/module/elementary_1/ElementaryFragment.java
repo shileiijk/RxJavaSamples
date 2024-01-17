@@ -4,17 +4,18 @@ package com.rengwuxian.rxjavasamples.module.elementary_1;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioButton;
+import android.widget.CompoundButton;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.GridLayoutManager;
+
 import com.rengwuxian.rxjavasamples.BaseFragment;
+import com.rengwuxian.rxjavasamples.databinding.FragmentElementaryBinding;
 import com.rengwuxian.rxjavasamples.network.Network;
 import com.rengwuxian.rxjavasamples.R;
 import com.rengwuxian.rxjavasamples.adapter.ZhuangbiListAdapter;
@@ -22,27 +23,18 @@ import com.rengwuxian.rxjavasamples.model.ZhuangbiImage;
 
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnCheckedChanged;
-import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
-public class ElementaryFragment extends BaseFragment {
-    @BindView(R.id.swipeRefreshLayout) SwipeRefreshLayout swipeRefreshLayout;
-    @BindView(R.id.gridRv) RecyclerView gridRv;
-
+public class ElementaryFragment extends BaseFragment<FragmentElementaryBinding> {
     ZhuangbiListAdapter adapter = new ZhuangbiListAdapter();
 
-    @OnCheckedChanged({R.id.searchRb1, R.id.searchRb2, R.id.searchRb3, R.id.searchRb4})
-    void onTagChecked(RadioButton searchRb, boolean checked) {
+    void onTagChecked(CompoundButton searchRb, boolean checked) {
         if (checked) {
             unsubscribe();
             adapter.setImages(null);
-            swipeRefreshLayout.setRefreshing(true);
+            viewBinding.swipeRefreshLayout.setRefreshing(true);
             search(searchRb.getText().toString());
         }
     }
@@ -55,30 +47,36 @@ public class ElementaryFragment extends BaseFragment {
                 .subscribe(new Consumer<List<ZhuangbiImage>>() {
                     @Override
                     public void accept(@NonNull List<ZhuangbiImage> images) throws Exception {
-                        swipeRefreshLayout.setRefreshing(false);
+                        viewBinding.swipeRefreshLayout.setRefreshing(false);
                         adapter.setImages(images);
                     }
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(@NonNull Throwable throwable) throws Exception {
-                        swipeRefreshLayout.setRefreshing(false);
+                        viewBinding.swipeRefreshLayout.setRefreshing(false);
                         Toast.makeText(getActivity(), R.string.loading_failed, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_elementary, container, false);
-        ButterKnife.bind(this, view);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        viewBinding.gridRv.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+        viewBinding.gridRv.setAdapter(adapter);
+        viewBinding.swipeRefreshLayout.setColorSchemeColors(Color.BLUE, Color.GREEN, Color.RED, Color.YELLOW);
+        viewBinding.swipeRefreshLayout.setEnabled(false);
+        viewBinding.searchRb1.setOnCheckedChangeListener(this::onTagChecked);
+        viewBinding.searchRb2.setOnCheckedChangeListener(this::onTagChecked);
+        viewBinding.searchRb3.setOnCheckedChangeListener(this::onTagChecked);
+        viewBinding.searchRb4.setOnCheckedChangeListener(this::onTagChecked);
+        viewBinding.tipBt.tipBt.setOnClickListener((v) -> tip());
+    }
 
-        gridRv.setLayoutManager(new GridLayoutManager(getActivity(), 2));
-        gridRv.setAdapter(adapter);
-        swipeRefreshLayout.setColorSchemeColors(Color.BLUE, Color.GREEN, Color.RED, Color.YELLOW);
-        swipeRefreshLayout.setEnabled(false);
-
-        return view;
+    @NonNull
+    @Override
+    public FragmentElementaryBinding getBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
+        return FragmentElementaryBinding.inflate(inflater, container, false);
     }
 
     @Override

@@ -2,8 +2,8 @@
 
 package com.rengwuxian.rxjavasamples.module.cache_6.data;
 
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 
 import com.rengwuxian.rxjavasamples.App;
 import com.rengwuxian.rxjavasamples.network.Network;
@@ -16,11 +16,9 @@ import java.util.List;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
-import io.reactivex.observers.DefaultObserver;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.BehaviorSubject;
 
@@ -99,29 +97,29 @@ public class Data {
         if (cache == null) {
             cache = BehaviorSubject.create();
             Observable.create(new ObservableOnSubscribe<List<Item>>() {
-                @Override
-                public void subscribe(ObservableEmitter<List<Item>> e) throws Exception {
-                    List<Item> items = Database.getInstance().readItems();
-                    if (items == null) {
-                        setDataSource(DATA_SOURCE_NETWORK);
-                        loadFromNetwork();
-                    } else {
-                        setDataSource(DATA_SOURCE_DISK);
-                        e.onNext(items);
-                    }
-                }
-            })
+                        @Override
+                        public void subscribe(ObservableEmitter<List<Item>> e) throws Exception {
+                            List<Item> items = Database.getInstance().readItems();
+                            if (items == null) {
+                                setDataSource(DATA_SOURCE_NETWORK);
+                                loadFromNetwork();
+                            } else {
+                                setDataSource(DATA_SOURCE_DISK);
+                                e.onNext(items);
+                            }
+                        }
+                    })
                     .subscribeOn(Schedulers.io())
                     .subscribe(cache);
         } else {
             setDataSource(DATA_SOURCE_MEMORY);
         }
         return cache.doOnError(new Consumer<Throwable>() {
-            @Override
-            public void accept(@io.reactivex.annotations.NonNull Throwable throwable) throws Exception {
-                cache = null;
-            }
-        })
+                    @Override
+                    public void accept(@io.reactivex.annotations.NonNull Throwable throwable) throws Exception {
+                        cache = null;
+                    }
+                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(onNext, onError);
     }

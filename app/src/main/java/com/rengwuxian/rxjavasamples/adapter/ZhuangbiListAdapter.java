@@ -2,37 +2,38 @@
 
 package com.rengwuxian.rxjavasamples.adapter;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.rengwuxian.rxjavasamples.R;
+import com.rengwuxian.rxjavasamples.databinding.GridItemBinding;
 import com.rengwuxian.rxjavasamples.model.ZhuangbiImage;
 
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
-public class ZhuangbiListAdapter extends RecyclerView.Adapter {
+public class ZhuangbiListAdapter extends RecyclerView.Adapter<ZhuangbiListAdapter.DebounceViewHolder> {
     List<ZhuangbiImage> images;
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.grid_item, parent, false);
-        return new DebounceViewHolder(view);
+    public DebounceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        GridItemBinding binding =
+                GridItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        return new DebounceViewHolder(binding);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        DebounceViewHolder debounceViewHolder = (DebounceViewHolder) holder;
+    public void onBindViewHolder(DebounceViewHolder holder, int position) {
         ZhuangbiImage image = images.get(position);
-        Glide.with(holder.itemView.getContext()).load(image.image_url).into(debounceViewHolder.imageIv);
-        debounceViewHolder.descriptionTv.setText(image.description);
+        Glide.with(holder.itemView.getContext()).load(image.image_url).into(holder.imageIv);
+        holder.descriptionTv.setText(image.description);
     }
 
     @Override
@@ -46,12 +47,13 @@ public class ZhuangbiListAdapter extends RecyclerView.Adapter {
     }
 
     static class DebounceViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.imageIv) ImageView imageIv;
-        @BindView(R.id.descriptionTv) TextView descriptionTv;
-        public DebounceViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
+        ImageView imageIv;
+        TextView descriptionTv;
+
+        public DebounceViewHolder(GridItemBinding binding) {
+            super(binding.getRoot());
+            imageIv = binding.imageIv;
+            descriptionTv = binding.descriptionTv;
         }
     }
-
 }

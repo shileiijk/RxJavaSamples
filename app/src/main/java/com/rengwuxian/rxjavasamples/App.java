@@ -3,6 +3,10 @@
 package com.rengwuxian.rxjavasamples;
 
 import android.app.Application;
+import android.media.audiofx.DynamicsProcessing;
+
+import me.weishu.reflection.Reflection;
+import com.wanjian.sak.SAK;
 
 public class App extends Application {
     private static App INSTANCE;
@@ -15,5 +19,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         INSTANCE = this;
+        me.weishu.reflection.Reflection.unseal(this);
+//        SAK.init(this, null);
     }
 }

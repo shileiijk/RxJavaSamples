@@ -4,86 +4,82 @@ package com.rengwuxian.rxjavasamples.module.cache_6;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.rengwuxian.rxjavasamples.BaseFragment;
 import com.rengwuxian.rxjavasamples.R;
 import com.rengwuxian.rxjavasamples.adapter.ItemListAdapter;
+import com.rengwuxian.rxjavasamples.databinding.FragmentCacheBinding;
 import com.rengwuxian.rxjavasamples.model.Item;
 import com.rengwuxian.rxjavasamples.module.cache_6.data.Data;
 
 import java.util.List;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import io.reactivex.Observer;
-import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
 
-public class CacheFragment extends BaseFragment {
-    @BindView(R.id.loadingTimeTv) TextView loadingTimeTv;
-    @BindView(R.id.swipeRefreshLayout) SwipeRefreshLayout swipeRefreshLayout;
-    @BindView(R.id.cacheRv) RecyclerView cacheRv;
+public class CacheFragment extends BaseFragment<FragmentCacheBinding> {
     ItemListAdapter adapter = new ItemListAdapter();
     private long startingTime;
 
-    @OnClick(R.id.clearMemoryCacheBt)
     void clearMemoryCache() {
         Data.getInstance().clearMemoryCache();
         adapter.setItems(null);
         Toast.makeText(getActivity(), R.string.memory_cache_cleared, Toast.LENGTH_SHORT).show();
     }
 
-    @OnClick(R.id.clearMemoryAndDiskCacheBt)
     void clearMemoryAndDiskCache() {
         Data.getInstance().clearMemoryAndDiskCache();
         adapter.setItems(null);
         Toast.makeText(getActivity(), R.string.memory_and_disk_cache_cleared, Toast.LENGTH_SHORT).show();
     }
 
-    @OnClick(R.id.loadBt)
     void load() {
-        swipeRefreshLayout.setRefreshing(true);
+        viewBinding.swipeRefreshLayout.setRefreshing(true);
         startingTime = System.currentTimeMillis();
         unsubscribe();
         disposable = Data.getInstance()
                 .subscribeData(new Consumer<List<Item>>() {
                     @Override
                     public void accept(@NonNull List<Item> items) throws Exception {
-                        swipeRefreshLayout.setRefreshing(false);
+                        viewBinding.swipeRefreshLayout.setRefreshing(false);
                         int loadingTime = (int) (System.currentTimeMillis() - startingTime);
-                        loadingTimeTv.setText(getString(R.string.loading_time_and_source, loadingTime, Data.getInstance().getDataSourceText()));
+                        viewBinding.loadingTimeTv.setText(getString(R.string.loading_time_and_source, loadingTime, Data.getInstance().getDataSourceText()));
                         adapter.setItems(items);
                     }
                 }, new Consumer<Throwable>() {
                     @Override
                     public void accept(@NonNull Throwable throwable) throws Exception {
                         throwable.printStackTrace();
-                        swipeRefreshLayout.setRefreshing(false);
+                        viewBinding.swipeRefreshLayout.setRefreshing(false);
                         Toast.makeText(getActivity(), R.string.loading_failed, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    @Nullable
+    @NonNull
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_cache, container, false);
-        ButterKnife.bind(this, view);
-        cacheRv.setLayoutManager(new GridLayoutManager(getActivity(), 2));
-        cacheRv.setAdapter(adapter);
-        swipeRefreshLayout.setColorSchemeColors(Color.BLUE, Color.GREEN, Color.RED, Color.YELLOW);
-        swipeRefreshLayout.setEnabled(false);
-        return view;
+    public FragmentCacheBinding getBinding(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
+        return FragmentCacheBinding.inflate(inflater, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        viewBinding.cacheRv.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+        viewBinding.cacheRv.setAdapter(adapter);
+        viewBinding.swipeRefreshLayout.setColorSchemeColors(Color.BLUE, Color.GREEN, Color.RED, Color.YELLOW);
+        viewBinding.swipeRefreshLayout.setEnabled(false);
+        viewBinding.loadBt.setOnClickListener(v -> load());
+        viewBinding.clearMemoryCacheBt.setOnClickListener(v -> clearMemoryCache());
+        viewBinding.clearMemoryAndDiskCacheBt.setOnClickListener(v -> clearMemoryAndDiskCache());
+        viewBinding.tipBt.tipBt.setOnClickListener((v) -> tip());
     }
 
     @Override
